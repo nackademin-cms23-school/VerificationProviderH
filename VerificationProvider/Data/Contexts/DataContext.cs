@@ -7,4 +7,5 @@ namespace VerificationProvider.Data.Contexts;
 public class DataContext(DbContextOptions<DataContext> options) : IdentityDbContext<UserEntity>(options)
 {
     public DbSet<VerificationRequestEntity> VerificationRequests { get; set; }
+    public DbSet<ForgotPasswordRequestEntity> ForgotPasswordRequests { get; set;}
 }

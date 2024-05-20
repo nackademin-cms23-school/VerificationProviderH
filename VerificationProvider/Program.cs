@@ -1,10 +1,12 @@
 using Azure.Messaging.ServiceBus;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Diagnostics;
 using VerificationProvider.Data.Contexts;
+using VerificationProvider.Data.Entities;
 using VerificationProvider.Services;
 
 var host = new HostBuilder()
@@ -17,7 +19,15 @@ var host = new HostBuilder()
         services.AddScoped<IVerificationService, VerificationService>();
         services.AddScoped<IVerificationCleanerService, VerificationCleanerService>();
         services.AddScoped<IValidateVerificationCodeService, ValidateVerificationCodeService>();
-        services.AddSingleton<ServiceBusClient>(new ServiceBusClient(Environment.GetEnvironmentVariable("ServiceBus"))); 
+        services.AddSingleton<ServiceBusClient>(new ServiceBusClient(Environment.GetEnvironmentVariable("ServiceBus")));
+
+        services.AddIdentity<UserEntity, IdentityRole>(x =>
+        {
+            x.User.RequireUniqueEmail = true;
+            x.SignIn.RequireConfirmedEmail = true;
+            x.Password.RequiredLength = 8;
+        }).AddEntityFrameworkStores<DataContext>()
+            .AddDefaultTokenProviders();
         
     })
     .Build();

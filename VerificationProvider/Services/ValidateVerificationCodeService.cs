@@ -1,17 +1,20 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using VerificationProvider.Data.Contexts;
+using VerificationProvider.Data.Entities;
 using VerificationProvider.Functions;
 using VerificationProvider.Models;
 
 namespace VerificationProvider.Services;
 
-public class ValidateVerificationCodeService(ILogger<ValidateVerificationCode> logger, DataContext context) : IValidateVerificationCodeService
+public class ValidateVerificationCodeService(ILogger<ValidateVerificationCode> logger, DataContext context, UserManager<UserEntity> userManager) : IValidateVerificationCodeService
 {
     private readonly ILogger<ValidateVerificationCode> _logger = logger;
     private readonly DataContext _context = context;
+    private readonly UserManager<UserEntity> _userManager = userManager;
 
     public async Task<ValidateRequest> UnpackValidateRequestAsync(HttpRequest req)
     {
@@ -29,7 +32,7 @@ public class ValidateVerificationCodeService(ILogger<ValidateVerificationCode> l
         }
         catch (Exception ex)
         {
-            _logger.LogError($"ERROR : ValidateVerificationCodeService.UnpackValidateRequestAsync :: {ex.Message}");
+            _logger.LogError($"ERROR : ValidateVerificationCodeService.UnpackValidateRequestAsync() :: {ex.Message}");
         }
         return null!;
     }
@@ -50,7 +53,27 @@ public class ValidateVerificationCodeService(ILogger<ValidateVerificationCode> l
         }
         catch (Exception ex)
         {
-            _logger.LogError($"ERROR : ValidateVerificationCodeService.ValidateCodeAsync :: {ex.Message}");
+            _logger.LogError($"ERROR : ValidateVerificationCodeService.ValidateCodeAsync() :: {ex.Message}");
+        }
+        return false;
+    }
+
+    public async Task<bool> UpdateEmailConfirmed(ValidateRequest request)
+    {
+        try
+        {
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            if (user != null)
+            {
+                user!.EmailConfirmed = true;
+                await _userManager.UpdateAsync(user);
+
+                return true;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"ERROR : ValidateVerificationCodeService.UpdateEmailConfirmed() :: {ex.Message}");
         }
         return false;
     }

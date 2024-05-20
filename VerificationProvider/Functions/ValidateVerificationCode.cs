@@ -17,7 +17,7 @@ public class ValidateVerificationCode(ILogger<ValidateVerificationCode> logger, 
     private readonly DataContext _context = context;
 
     [Function("ValidateVerificationCode")]
-    public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)
+    public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
     {
         try
         {
